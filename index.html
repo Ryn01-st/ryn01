@@ -3,7 +3,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Ultimate AI Intro</title>
+<title>AI Intro Cinematic</title>
 
 <style>
 body {
@@ -13,74 +13,137 @@ body {
   font-family: Arial, sans-serif;
 }
 
+/* ===== BACKGROUND ===== */
 .banner {
   position: relative;
   width: 100%;
   height: 100vh;
 }
 
-/* nền */
 .banner::before {
   content: "";
   position: absolute;
   width: 100%;
   height: 100%;
-  background: url("https://raw.githubusercontent.com/Ryn01-st/ryn01/main/trangchu1.png") center/cover no-repeat;
-  filter: brightness(0.4);
-  animation: zoomBg 12s infinite alternate;
+  background: url("https://github.com/Ryn01-st/ryn01/blob/main/trangchu1.png") center/cover no-repeat;
+  filter: brightness(0.4) blur(2px);
 }
 
-@keyframes zoomBg {
-  from { transform: scale(1); }
-  to { transform: scale(1.1); }
-}
-
-/* overlay */
-.overlay {
+/* ===== EDGE FADE ===== */
+.edge-fade {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.9));
+
+  background:
+    radial-gradient(circle at center,
+      transparent 20%,
+      rgba(0,0,0,0.5) 50%,
+      rgba(0,0,0,0.95) 85%
+    );
+
+  animation: openScene 2.5s ease forwards;
 }
 
-/* title */
-.title {
-  position: absolute;
-  top: 50%;
-  width: 100%;
-  text-align: center;
-  font-size: 60px;
-  font-weight: bold;
-  opacity: 0;
-  transform: translateY(-50%) scale(0.8);
-
-  background: linear-gradient(90deg, #00eaff, #00ffcc, #00eaff);
-  -webkit-background-clip: text;
-  color: transparent;
-
-  text-shadow: 0 0 20px #00eaff;
-
-  animation: showTitle 2s forwards;
-}
-
-@keyframes showTitle {
+@keyframes openScene {
+  from {
+    background: radial-gradient(circle at center, black 0%, black 100%);
+  }
   to {
-    opacity: 1;
-    transform: translateY(-50%) scale(1.1);
+    background:
+      radial-gradient(circle at center,
+        transparent 20%,
+        rgba(0,0,0,0.5) 50%,
+        rgba(0,0,0,0.95) 85%
+      );
   }
 }
 
-/* nút nhạc */
+/* ===== LIGHT SWEEP ===== */
+.light {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(255,255,255,0.15),
+    transparent 60%
+  );
+  animation: sweep 6s linear infinite;
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ===== TEXT ===== */
+.title {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+
+  font-size: 65px;
+  font-weight: 900;
+  color: white;
+
+  text-shadow:
+    0 0 10px #00eaff,
+    0 0 40px #00eaff,
+    0 0 80px #0088ff;
+
+  opacity: 0;
+  transform: scale(0.8);
+
+  animation: showTitle 3s ease forwards;
+  animation-delay: 1.5s;
+}
+
+@keyframes showTitle {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(50px);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+    filter: blur(0);
+  }
+}
+
+/* ===== PARTICLES ===== */
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* ===== MUSIC BUTTON ===== */
 .music-btn {
   position: fixed;
   bottom: 20px;
   right: 20px;
+
+  width: 55px;
+  height: 55px;
+
   background: rgba(0,0,0,0.6);
   color: white;
+
   border: none;
-  padding: 10px;
-  border-radius: 10px;
+  border-radius: 50%;
+
+  font-size: 24px;
   cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 0 15px rgba(0,255,255,0.5);
 }
 </style>
 
@@ -90,115 +153,118 @@ body {
 
 <div class="banner">
   <canvas id="particles"></canvas>
-  <div class="overlay"></div>
+  <div class="edge-fade"></div>
+  <div class="light"></div>
 
-  <div class="title" id="mainTitle">
-    ỨNG DỤNG AI<br>TRONG HỌC TẬP 🚀
+  <div class="title">
+    FEEDBACKS & COMMENTS
   </div>
 </div>
 
-<audio id="music" loop>
-  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3">
+<!-- 🎵 NHẠC -->
+
+<audio id="music" loop preload="auto">
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
 </audio>
 
-<button class="music-btn" onclick="toggleMusic()">🔊</button>
+<button class="music-btn" id="musicBtn">🔇</button>
 
 <script>
+// ===== PARTICLES =====
 const canvas = document.getElementById("particles");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 let particles = [];
-let textPositions = [];
-let phase = 0; // 0 = bay, 1 = tụ, 2 = nổ
 
-// tạo chữ AI
-const offCanvas = document.createElement("canvas");
-const offCtx = offCanvas.getContext("2d");
-
-offCanvas.width = canvas.width;
-offCanvas.height = canvas.height;
-
-offCtx.fillStyle = "white";
-offCtx.font = "bold 200px Arial";
-offCtx.textAlign = "center";
-offCtx.fillText("AI", canvas.width/2, canvas.height/2);
-
-const data = offCtx.getImageData(0,0,canvas.width,canvas.height).data;
-
-for (let y = 0; y < canvas.height; y+=6) {
-  for (let x = 0; x < canvas.width; x+=6) {
-    let index = (y*canvas.width + x)*4;
-    if (data[index+3] > 128) {
-      textPositions.push({x,y});
-    }
-  }
-}
-
-// particles
-for (let i=0;i<textPositions.length;i++){
+for (let i = 0; i < 80; i++) {
   particles.push({
-    x: Math.random()*canvas.width,
-    y: Math.random()*canvas.height,
-    targetX: textPositions[i].x,
-    targetY: textPositions[i].y
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    size: Math.random() * 2,
+    speedX: (Math.random() - 0.5),
+    speedY: (Math.random() - 0.5)
   });
 }
 
-function animate(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  particles.forEach(p=>{
-    if (phase === 0){
-      p.x += (Math.random()-0.5)*5;
-      p.y += (Math.random()-0.5)*5;
-    }
-    if (phase === 1){
-      p.x += (p.targetX - p.x)*0.05;
-      p.y += (p.targetY - p.y)*0.05;
-    }
-    if (phase === 2){
-      p.x += (Math.random()-0.5)*15;
-      p.y += (Math.random()-0.5)*15;
-    }
-
+  particles.forEach(p => {
     ctx.beginPath();
-    ctx.arc(p.x,p.y,2,0,Math.PI*2);
-    ctx.fillStyle = "#00ffff";
-    ctx.shadowColor = "#00ffff";
-    ctx.shadowBlur = 10;
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,255,255,0.7)";
     ctx.fill();
+
+    p.x += p.speedX;
+    p.y += p.speedY;
+
+    if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
   });
 
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ===== MUSIC =====
+const music = document.getElementById("music");
+const btn = document.getElementById("musicBtn");
+
+let isPlaying = false;
+
+// fade-in nhẹ
+function fadeInMusic() {
+  music.volume = 0;
+  let v = 0;
+
+  let fade = setInterval(() => {
+    v += 0.01;
+    if (v >= 0.2) {
+      v = 0.2;
+      clearInterval(fade);
+    }
+    music.volume = v;
+  }, 120);
 }
 
-animate();
+// click đầu tiên
+document.addEventListener("click", () => {
+  if (!isPlaying) {
 
-// timeline
-setTimeout(()=> phase=1, 2000); // tụ thành AI
-setTimeout(()=> phase=2, 4500); // nổ
-setTimeout(()=> {
-  document.getElementById("mainTitle").style.opacity = 1;
-}, 5000);
+    music.addEventListener("loadedmetadata", () => {
 
-// music
-let music = document.getElementById("music");
-let played = false;
+      music.currentTime = music.duration * 0.25; // bắt đầu từ 1/4
 
-document.body.addEventListener("click", ()=>{
-  if(!played){
-    music.play();
-    played=true;
+      music.play().then(() => {
+        fadeInMusic();
+        btn.textContent = "🔊";
+        isPlaying = true;
+      });
+
+    }, { once: true });
+
   }
-}, {once:true});
+}, { once: true });
 
-function toggleMusic(){
-  if(music.paused) music.play();
-  else music.pause();
-}
+// toggle
+btn.addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  if (music.paused) {
+    music.play();
+    btn.textContent = "🔊";
+  } else {
+    music.pause();
+    btn.textContent = "🔇";
+  }
+});
 </script>
 
 </body>
