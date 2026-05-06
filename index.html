@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>AI Intro Pro</title>
+
+<style>
+body {
+  margin: 0;
+  background: black;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+/* NỀN */
+.banner {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+.banner::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: url("https://drive.google.com/uc?export=view&id=1H8V8X_guxNvtkzgkfG6fak1OR-1-CxmP") center/cover no-repeat;
+  filter: brightness(0.3) blur(3px);
+}
+
+/* OVERLAY */
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.85));
+}
+
+/* TEXT */
+.title {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 60px;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0.8);
+
+  text-shadow:
+    0 0 10px #00eaff,
+    0 0 30px #00eaff;
+
+  animation: showTitle 4s ease forwards;
+  animation-delay: 2s;
+}
+
+.subtitle {
+  position: absolute;
+  top: 60%;
+  width: 100%;
+  text-align: center;
+  color: #ccc;
+  font-size: 22px;
+  opacity: 0;
+
+  animation: fadeIn 3s forwards;
+  animation-delay: 4s;
+}
+
+.intro {
+  position: absolute;
+  top: 40%;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 20px;
+  letter-spacing: 3px;
+  opacity: 0;
+
+  animation: fadeIn 2s forwards;
+}
+
+/* PARTICLES */
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* LIGHT SWEEP */
+.light {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(255,255,255,0.2),
+    transparent 60%
+  );
+  animation: sweep 6s linear infinite;
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes showTitle {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(50px);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: blur(0);
+  }
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* BUTTON */
+.music-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="banner">
+  <canvas id="particles"></canvas>
+  <div class="overlay"></div>
+  <div class="light"></div>
+
+  <div class="title">
+    ỨNG DỤNG AI<br>TRONG HỌC TẬP 
+  </div>
+
+</div>
+
+<!-- NHẠC (mình chọn nhạc nhẹ, hiện đại, hợp AI) -->
+
+<audio id="music" loop>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" type="audio/mpeg">
+</audio>
+
+<button class="music-btn" onclick="toggleMusic()">🔊</button>
+
+<script>
+// ===== PARTICLES =====
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+
+for (let i = 0; i < 80; i++) {
+  particles.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    size: Math.random() * 2,
+    speedX: (Math.random() - 0.5),
+    speedY: (Math.random() - 0.5)
+  });
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,255,255,0.7)";
+    ctx.fill();
+
+    p.x += p.speedX;
+    p.y += p.speedY;
+
+    if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+  });
+
+  requestAnimationFrame(animateParticles);
+}
+
+animateParticles();
+
+// ===== MUSIC =====
+let isPlaying = false;
+const music = document.getElementById("music");
+
+document.addEventListener("click", () => {
+  if (!isPlaying) {
+    music.play();
+    isPlaying = true;
+  }
+});
+
+function toggleMusic() {
+  if (isPlaying) {
+    music.pause();
+  } else {
+    music.play();
+  }
+  isPlaying = !isPlaying;
+}
+</script>
+
+</body>
+</html>
